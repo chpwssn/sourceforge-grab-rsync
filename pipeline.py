@@ -113,13 +113,15 @@ class PrepareDirectories(SimpleTask):
         open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
 class getRsyncURL(SimpleTask):
-    def __init__(self, item):
+    def __init__(self, def_target):
         SimpleTask.__init__(self, "GetRsyncURL")
+        self.target = def_target
+        
+    def process(self, item):
         print(item)
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
             self.target = "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
-                
     def __str__(self):
         return self.target
 
