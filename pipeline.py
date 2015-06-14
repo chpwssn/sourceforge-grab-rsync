@@ -117,7 +117,7 @@ class getRsyncURL(SimpleTask):
         SimpleTask.__init__(self, "GetRsyncURL")
         self.target = def_target
         
-    def process(self, item):
+    def realize(self, item):
         print(item)
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
