@@ -216,6 +216,7 @@ project = Project(
 )
 
 def getRsyncURL(itemtext):
+    print itemtext
     item_type, item_project, item_mountpoint = itemtext.split(':')
     if item_type == "git":
         return "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
@@ -245,7 +246,7 @@ pipeline = Pipeline(
     #    id_function=stats_id_function,
     #),
     #MoveFiles(),
-    
+    print ItemValue("item_value"),
     ExternalProcess("rsync", ["rsync", "-av", getRsyncURL(str(ItemValue("item_value"))), ItemInterpolation("%(data_dir)s/foo")]),
     ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
