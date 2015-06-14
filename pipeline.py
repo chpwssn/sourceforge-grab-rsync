@@ -122,6 +122,9 @@ class getRsyncURL(SimpleTask):
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
             self.target = "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
+        return self.target
+        
+        
     def __str__(self):
         return self.target
 
