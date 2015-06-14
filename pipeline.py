@@ -112,9 +112,9 @@ class PrepareDirectories(SimpleTask):
 
         open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
-class getRsyncURL(SimpleTask):
+class getRsyncURL(object):
     def __init__(self, def_target):
-        SimpleTask.__init__(self, "GetRsyncURL")
+        #SimpleTask.__init__(self, "GetRsyncURL")
         self.target = def_target
         
     def realize(self, item):
@@ -122,7 +122,7 @@ class getRsyncURL(SimpleTask):
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
             self.target = "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
-        return self.target
+        return realize(self.target, item)
         
         
     def __str__(self):
@@ -256,9 +256,10 @@ pipeline = Pipeline(
     #    id_function=stats_id_function,
     #),
     #MoveFiles(),
+    print(WgetArgs()),
     print("in pipeline print %s" % str(getRsyncURL("foo"))),
-    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/foo")]),
-    ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
+    #ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/foo")]),
+    #ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
         name="shared:rsync_threads", title="Rsync threads",
         description="The maximum number of concurrent uploads."),
@@ -277,7 +278,7 @@ pipeline = Pipeline(
                 "--partial",
                 "--partial-dir", ".rsync-tmp",
             ]
-            ),
+        ),
     ),
     #ExternalProcess("clean up", ["rm", "-rf", ItemInterpolation("%(data_dir)s/foo*")])
     #SendDoneToTracker(
