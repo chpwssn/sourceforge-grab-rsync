@@ -112,7 +112,7 @@ class PrepareDirectories(SimpleTask):
 
         open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
-class getRsyncURL(SimpleTask):
+class getRsyncURL(object):
     def process(self, item):
         print(itemtext)
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
@@ -248,7 +248,7 @@ pipeline = Pipeline(
     #),
     #MoveFiles(),
     print(getRsyncURL()),
-    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL(str(ItemValue("item_value"))), ItemInterpolation("%(data_dir)s/foo")]),
+    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL(), ItemInterpolation("%(data_dir)s/foo")]),
     ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
         name="shared:rsync_threads", title="Rsync threads",
