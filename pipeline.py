@@ -241,8 +241,8 @@ pipeline = Pipeline(
     #),
     #MoveFiles(),
     
-    ExternalProcess("rsync", ["rsync", "-av", "git.code.sf.net::p/a001/code.git", "foo"]),
-    ExternalProcess("tar", ["tar", "-czf", "foo.tar.gz", "foo"]),
+    ExternalProcess("rsync", ["rsync", "-av", "git.code.sf.net::p/a001/code.git", "%(data_dir)s/foo"]),
+    ExternalProcess("tar", ["tar", "-czf", "%(data_dir)s/foo.tar.gz", "%(data_dir)s/foo"]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
         name="shared:rsync_threads", title="Rsync threads",
         description="The maximum number of concurrent uploads."),
@@ -251,8 +251,8 @@ pipeline = Pipeline(
             downloader=downloader,
             version=VERSION,
             files=[
-                #ItemInterpolation("%(data_dir)s/%(warc_file_base)s.warc.gz")
-                ItemInterpolation("foo.tar.gz")
+                ItemInterpolation("%(data_dir)s/foo.tar.gz")
+                #ItemInterpolation("foo.tar.gz")
             ],
             #rsync_target_source_path=ItemInterpolation("%(data_dir)s/"),
             rsync_target_source_path="./",
@@ -263,6 +263,7 @@ pipeline = Pipeline(
             ]
             ),
     ),
+    ExternalProcess("clean up", ["rm", "-rf", "%(data_dir)s/foo*"])
     #SendDoneToTracker(
     #    tracker_url="http://%s/%s" % (TRACKER_HOST, TRACKER_ID),
     #    stats=ItemValue("stats")
