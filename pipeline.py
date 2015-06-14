@@ -215,6 +215,11 @@ project = Project(
     """
 )
 
+def getRsyncURL(itemtext):
+    item_type, item_project, item_mountpoint = itemtext.split(':')
+    if item_type == "git":
+        return "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
+
 pipeline = Pipeline(
     CheckIP(),
     GetItemFromTracker("http://%s/%s" % (TRACKER_HOST, TRACKER_ID), downloader,
@@ -241,7 +246,7 @@ pipeline = Pipeline(
     #),
     #MoveFiles(),
     
-    ExternalProcess("rsync", ["rsync", "-av", "git.code.sf.net::p/a001/code.git", ItemInterpolation("%(data_dir)s/foo")]),
+    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL(str(ItemValue("item_value"))), ItemInterpolation("%(data_dir)s/foo")]),
     ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
         name="shared:rsync_threads", title="Rsync threads",
