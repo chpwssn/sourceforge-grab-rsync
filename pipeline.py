@@ -117,7 +117,7 @@ class getRsyncURL(object):
         print(itemtext)
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
-            self.target "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
+            self.target = "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
     def __str__():
         return self.target
 
