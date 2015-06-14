@@ -112,6 +112,12 @@ class PrepareDirectories(SimpleTask):
 
         open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
+class getRsyncURL(SimpleTask):
+    def __init__(self, item):
+        print(itemtext)
+        item_type, item_project, item_mountpoint = item['item_name'].split(':')
+        if item_type == "git":
+            return "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
 
 class MoveFiles(SimpleTask):
     def __init__(self):
@@ -215,11 +221,6 @@ project = Project(
     """
 )
 
-def getRsyncURL(itemtext):
-    print(itemtext)
-    item_type, item_project, item_mountpoint = itemtext.split(':')
-    if item_type == "git":
-        return "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
 
 pipeline = Pipeline(
     CheckIP(),
@@ -246,7 +247,7 @@ pipeline = Pipeline(
     #    id_function=stats_id_function,
     #),
     #MoveFiles(),
-    print(ItemValue("item_value")),
+    print(getRsyncURL()),
     ExternalProcess("rsync", ["rsync", "-av", getRsyncURL(str(ItemValue("item_value"))), ItemInterpolation("%(data_dir)s/foo")]),
     ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
