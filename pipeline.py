@@ -113,7 +113,7 @@ class PrepareDirectories(SimpleTask):
         open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
 class getRsyncURL(SimpleTask):
-    def __init__(self, item):
+    def process(self, item):
         print(itemtext)
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
