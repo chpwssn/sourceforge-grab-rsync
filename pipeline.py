@@ -3,29 +3,26 @@ import datetime
 from distutils.version import StrictVersion
 import hashlib
 import os.path
+import shutil
+import socket
+import sys
+import time
 import random
-from seesaw.config import realize, NumberConfigValue
+
+import seesaw
+from seesaw.config import NumberConfigValue
+from seesaw.externalprocess import ExternalProcess
 from seesaw.item import ItemInterpolation, ItemValue
+from seesaw.pipeline import Pipeline
+from seesaw.project import Project
 from seesaw.task import SimpleTask, LimitConcurrent
 from seesaw.tracker import GetItemFromTracker, PrepareStatsForTracker, \
     UploadWithTracker, SendDoneToTracker
-import shutil
-import socket
-import subprocess
-import sys
-import time
-import string
-
-import seesaw
-from seesaw.externalprocess import WgetDownload, ExternalProcess
-from seesaw.pipeline import Pipeline
-from seesaw.project import Project
-from seesaw.util import find_executable
 
 
 # check the seesaw version
-if StrictVersion(seesaw.__version__) < StrictVersion("0.8.5"):
-    raise Exception("This pipeline needs seesaw version 0.8.5 or higher.")
+if StrictVersion(seesaw.__version__) < StrictVersion("0.1.5"):
+    raise Exception("This pipeline needs seesaw version 0.1.5 or higher.")
 
 
 ###########################################################################
@@ -98,8 +95,7 @@ class PrepareDirectories(SimpleTask):
 
     def process(self, item):
         item_name = item["item_name"]
-        escaped_item_name = item_name.replace(':', '_').replace('/', '_').replace('~', '_')
-        dirname = "/".join((item["data_dir"], escaped_item_name))
+        dirname = "/".join((item["data_dir"], item_name))
 
         if os.path.isdir(dirname):
             shutil.rmtree(dirname)
@@ -107,8 +103,9 @@ class PrepareDirectories(SimpleTask):
         os.makedirs(dirname)
 
         item["item_dir"] = dirname
-        item["warc_file_base"] = "%s-%s-%s" % (self.warc_prefix, escaped_item_name,
-            time.strftime("%Y%m%d-%H%M%S"))
+        item["warc_file_base"] = "%s-%s-%s" % (self.warc_prefix,
+                                               item_name.replace(':', '_'),
+                                               time.strftime("%Y%m%d-%H%M%S"))
 
         open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
@@ -133,12 +130,8 @@ class MoveFiles(SimpleTask):
         SimpleTask.__init__(self, "MoveFiles")
 
     def process(self, item):
-        # NEW for 2014! Check if wget was compiled with zlib support
-        if os.path.exists("%(item_dir)s/%(warc_file_base)s.warc" % item):
-            raise Exception('Please compile wget with zlib support!')
-
-        os.rename("%(item_dir)s/%(warc_file_base)s.warc.gz" % item,
-              "%(data_dir)s/%(warc_file_base)s.warc.gz" % item)
+        os.rename("%(item_dir)s/%(warc_file_base)s.txt.gz" % item,
+                  "%(data_dir)s/%(warc_file_base)s.txt.gz" % item)
 
         shutil.rmtree("%(item_dir)s" % item)
 
@@ -162,60 +155,6 @@ def stats_id_function(item):
     return d
 
 
-class WgetArgs(object):
-    def realize(self, item):
-        wget_args = [
-            WGET_LUA,
-            "-U", USER_AGENT,
-            "-nv",
-            "--lua-script", "sourceforge.lua",
-            "-o", ItemInterpolation("%(item_dir)s/wget.log"),
-            "--no-check-certificate",
-            "--output-document", ItemInterpolation("%(item_dir)s/wget.tmp"),
-            "--truncate-output",
-            "-e", "robots=off",
-            "--rotate-dns",
-            "--recursive", "--level=inf",
-            "--no-parent",
-            "--page-requisites",
-            "--timeout", "30",
-            "--tries", "inf",
-            "--domains", "google.com",
-            "--span-hosts",
-            "--waitretry", "30",
-            "--warc-file", ItemInterpolation("%(item_dir)s/%(warc_file_base)s"),
-            "--warc-header", "operator: Archive Team",
-            "--warc-header", "sourceforge-dld-script-version: " + VERSION,
-            "--warc-header", ItemInterpolation("sourceforge-user: %(item_name)s"),
-        ]
-        
-        item_name = item['item_name']
-        assert ':' in item_name
-        item_type, item_value = item_name.split(':', 1)
-        
-        item['item_type'] = item_type
-        item['item_value'] = item_value
-        
-        assert item_type in ('project')
-        
-        if item_type == 'project':
-            wget_args.append('http://sourceforge.net/projects/{0}/'.format(item_value))
-            wget_args.append('http://sourceforge.net/p/{0}/'.format(item_value))
-            wget_args.append('http://sourceforge.net/rest/p/{0}/'.format(item_value))
-            wget_args.append('http://sourceforge.net/rest/p/{0}?doap'.format(item_value))
-            wget_args.append('http://{0}.sourceforge.net/'.format(item_value))
-        else:
-            raise Exception('Unknown item')
-        
-        if 'bind_address' in globals():
-            wget_args.extend(['--bind-address', globals()['bind_address']])
-            print('')
-            print('*** Wget will bind address at {0} ***'.format(
-                globals()['bind_address']))
-            print('')
-            
-        return realize(wget_args, item)
-
 ###########################################################################
 # Initialize the project.
 #
@@ -230,27 +169,23 @@ project = Project(
     """
 )
 
-
 pipeline = Pipeline(
     CheckIP(),
     GetItemFromTracker("http://%s/%s" % (TRACKER_HOST, TRACKER_ID), downloader,
         VERSION),
-    #PrepareDirectories(warc_prefix="sourceforge"),
-    #WgetDownload(
-    #    WgetArgs(),
-    #    max_tries=2,
-    #    accept_on_exit_code=[0, 4, 8],
+    #PrepareDirectories(warc_prefix="bloggerdisco"),
+    #ExternalProcess('Scraper', CustomProcessArgs(),
+    #    max_tries=1,
+    #    accept_on_exit_code=[0],
     #    env={
-    #        "item_dir": ItemValue("item_dir"),
-    #        "item_value": ItemValue("item_value"),
-    #        "item_type": ItemValue("item_type"),
+    #        "item_dir": ItemValue("item_dir")
     #    }
     #),
     #PrepareStatsForTracker(
     #    defaults={"downloader": downloader, "version": VERSION},
     #    file_groups={
     #        "data": [
-    #            ItemInterpolation("%(item_dir)s/%(warc_file_base)s.warc.gz")
+    #            ItemInterpolation("%(item_dir)s/%(warc_file_base)s.txt.gz")
     #        ]
     #    },
     #    id_function=stats_id_function,
@@ -258,8 +193,8 @@ pipeline = Pipeline(
     #MoveFiles(),
     print(WgetArgs()),
     print("in pipeline print %s" % str(getRsyncURL("foo"))),
-    #ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/foo")]),
-    #ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
+    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/foo")]),
+    ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
         name="shared:rsync_threads", title="Rsync threads",
         description="The maximum number of concurrent uploads."),
@@ -280,9 +215,8 @@ pipeline = Pipeline(
             ]
         ),
     ),
-    #ExternalProcess("clean up", ["rm", "-rf", ItemInterpolation("%(data_dir)s/foo*")])
-    #SendDoneToTracker(
-    #    tracker_url="http://%s/%s" % (TRACKER_HOST, TRACKER_ID),
-    #    stats=ItemValue("stats")
-    #)
+    SendDoneToTracker(
+        tracker_url="http://%s/%s" % (TRACKER_HOST, TRACKER_ID),
+        stats=ItemValue("stats")
+    )
 )
