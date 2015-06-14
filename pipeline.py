@@ -118,7 +118,7 @@ class getRsyncURL(object):
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
             self.target = "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
-    def __str__():
+    def __str__(self):
         return self.target
 
 class MoveFiles(SimpleTask):
