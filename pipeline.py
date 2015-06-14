@@ -253,7 +253,7 @@ pipeline = Pipeline(
     #    id_function=stats_id_function,
     #),
     #MoveFiles(),
-    print(str(getRsyncURL("foo"))),
+    print("in pipeline print %s" % str(getRsyncURL("foo"))),
     ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/foo")]),
     ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
