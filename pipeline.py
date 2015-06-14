@@ -117,7 +117,9 @@ class getRsyncURL(object):
         print(itemtext)
         item_type, item_project, item_mountpoint = item['item_name'].split(':')
         if item_type == "git":
-            return "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
+            self.target "git.code.sf.net::p/%s/%s.git" % item_project, item_mountpoint
+    def __str__():
+        return self.target
 
 class MoveFiles(SimpleTask):
     def __init__(self):
@@ -247,7 +249,7 @@ pipeline = Pipeline(
     #    id_function=stats_id_function,
     #),
     #MoveFiles(),
-    print(getRsyncURL()),
+    print(str(getRsyncURL())),
     ExternalProcess("rsync", ["rsync", "-av", getRsyncURL(), ItemInterpolation("%(data_dir)s/foo")]),
     ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
     LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
