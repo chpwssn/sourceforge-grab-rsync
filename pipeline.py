@@ -125,11 +125,11 @@ class getRsyncURL(object):
 		elif item_type == "svn":
 			self.target = "svn.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "hg":
-			self.target = "rsync -av hg.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "hg.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "cvs":
-			self.target = "rsync -av rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "bzr":
-			self.target = "rsync -av %(project)s.bzr.sourceforge.net::bzrroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "%(project)s.bzr.sourceforge.net::bzrroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
 		#item.log_output(self.target)
 		return self.target
 	
