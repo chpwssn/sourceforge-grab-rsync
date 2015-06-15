@@ -27,25 +27,13 @@ if StrictVersion(seesaw.__version__) < StrictVersion("0.1.5"):
 	raise Exception("This pipeline needs seesaw version 0.1.5 or higher.")
 
 
-###########################################################################
-# Find a useful rsync executable
-#RSYNC = find_executable(
-#	"rsync",["2.6.9"],
-#	[
-#		"/usr/bin/rsync"
-#	]
-#)
-
-#if not RSYNC:
-#	raise Exception("No usable rsync found.")
-
 
 ###########################################################################
 # The version number of this pipeline definition.
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150614.02"
+VERSION = "20150614.03"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'sourceforge-rsync'
 TRACKER_HOST = 'tracker.nerds.io'
@@ -183,11 +171,11 @@ def stats_id_function(item):
 # This will be shown in the warrior management panel. The logo should not
 # be too big. The deadline is optional.
 project = Project(
-	title="sourceforge",
+	title="sourceforgersync",
 	project_html="""
 		<img class="project-logo" alt="Project logo" src="" height="50px" title=""/>
 		<h2>sourceforge.net <span class="links"><a href="http://sourceforge.net/">Website</a> &middot; <a href="http://tracker.archiveteam.org/sourceforge/">Leaderboard</a></span></h2>
-		<p>Saving all project from SourceForge.</p>
+		<p>Saving all project from SourceForge. rsyncing all of the source code repositories.</p>
 	"""
 )
 
@@ -195,14 +183,6 @@ pipeline = Pipeline(
 	CheckIP(),
 	GetItemFromTracker("http://%s/%s" % (TRACKER_HOST, TRACKER_ID), downloader,
 		VERSION),
-	#PrepareDirectories(warc_prefix="bloggerdisco"),
-	#ExternalProcess('Scraper', CustomProcessArgs(),
-	#	max_tries=1,
-	#	accept_on_exit_code=[0],
-	#	env={
-	#		"item_dir": ItemValue("item_dir")
-	#	}
-	#),
 	ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/%(item_name)s")]),
 	ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz"), "-C", ItemInterpolation("%(data_dir)s/"), ItemInterpolation("%(item_name)s")]),
 	LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
