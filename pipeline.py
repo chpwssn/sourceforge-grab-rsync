@@ -111,16 +111,25 @@ class PrepareDirectories(SimpleTask):
 
 		open("%(item_dir)s/%(warc_file_base)s.warc.gz" % item, "w").close()
 
-class getRsyncURL(SimpleTask):
+		
+class getRsyncURL(object):
 	def __init__(self,default_target):
-		SimpleTask.__init__(self, "GetRsyncURL")
+		#SimpleTask.__init__(self, "GetRsyncURL")
 		self.target = default_target
 		
-	def process(self, item):
+	def realize(self, item):
 		#item.log_output(item['item_name'])
 		item_type, item_project, item_mountpoint = item['item_name'].split(':')
 		if item_type == "git":
 			self.target = "git.code.sf.net::p/%(project)s/%(mountpoint)s.git" % {"project":item_project, "mountpoint":item_mountpoint}
+		elif item_type == "svn":
+			self.target = "svn.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
+		elif item_type == "hg":
+			self.target = "rsync -av hg.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
+		elif item_type == "cvs":
+			self.target = "rsync -av rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
+		elif item_type == "bzr":
+			self.target = "rsync -av %(project)s.bzr.sourceforge.net::bzrroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
 		#item.log_output(self.target)
 		return self.target
 	
@@ -128,6 +137,15 @@ class getRsyncURL(SimpleTask):
 	def __str__(self):
 		return self.target
 		
+class outputName(object):
+	def __init__(self):
+		pass
+		
+	def realize(self, item):
+		#item.log_output(item['item_name'])
+		item_type, item_project, item_mountpoint = item['item_name'].split(':')
+		return "%(project)s-%(SCM)s-%(mountpoint)s" % {"project":item_project, "SCM":item_type, "mountpoint":item_mountpoint}
+
 
 class MoveFiles(SimpleTask):
 	def __init__(self):
@@ -194,12 +212,8 @@ pipeline = Pipeline(
 	#	},
 	#	id_function=stats_id_function,
 	#),
-	#MoveFiles(),
-	#CustomTask(),
-	getRsyncURL("foo"),
-	#("in pipeline print %s" % str(getRsyncURL("bar").target)),
-	ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/foo")]),
-	ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/foo.tar.gz"), ItemInterpolation("%(data_dir)s/foo")]),
+	ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/%(item_name)s")]),
+	ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz"), ItemInterpolation("%(data_dir)s/%(item_name)s")]),
 	LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
 		name="shared:rsync_threads", title="Rsync threads",
 		description="The maximum number of concurrent uploads."),
@@ -208,7 +222,7 @@ pipeline = Pipeline(
 			downloader=downloader,
 			version=VERSION,
 			files=[
-				ItemInterpolation("%(data_dir)s/foo.tar.gz")
+				ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz")
 				#ItemInterpolation("foo.tar.gz")
 			],
 			#rsync_target_source_path=ItemInterpolation("%(data_dir)s/"),
