@@ -33,7 +33,7 @@ if StrictVersion(seesaw.__version__) < StrictVersion("0.1.5"):
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150614.03"
+VERSION = "20150614.04"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'sourceforge-rsync'
 TRACKER_HOST = 'tracker.nerds.io'
@@ -115,7 +115,7 @@ class getRsyncURL(object):
 		elif item_type == "hg":
 			self.target = "hg.code.sf.net::p/%(project)s/%(mountpoint)s" % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "cvs":
-			self.target = "rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(mountpoint)s/*" % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(project)s/*" % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "bzr":
 			self.target = "%(project)s.bzr.sourceforge.net::bzrroot/%(mountpoint)s/*" % {"project":item_project, "mountpoint":item_mountpoint}
 		item.log_output(self.target)
