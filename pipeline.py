@@ -203,17 +203,8 @@ pipeline = Pipeline(
 	#		"item_dir": ItemValue("item_dir")
 	#	}
 	#),
-	#PrepareStatsForTracker(
-	#	defaults={"downloader": downloader, "version": VERSION},
-	#	file_groups={
-	#		"data": [
-	#			ItemInterpolation("%(item_dir)s/%(warc_file_base)s.txt.gz")
-	#		]
-	#	},
-	#	id_function=stats_id_function,
-	#),
 	ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/%(item_name)s")]),
-	ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz"), ItemInterpolation("%(data_dir)s/%(item_name)s")]),
+	ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz"), "-C", ItemInterpolation("%(data_dir)s/"), ItemInterpolation("%(item_name)s")]),
 	LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
 		name="shared:rsync_threads", title="Rsync threads",
 		description="The maximum number of concurrent uploads."),
@@ -232,6 +223,15 @@ pipeline = Pipeline(
 				"--partial-dir", ".rsync-tmp",
 			]
 		),
+	),
+	PrepareStatsForTracker(
+		defaults={"downloader": downloader, "version": VERSION},
+		file_groups={
+			"data": [
+				ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz")
+			]
+		},
+		id_function=stats_id_function,
 	),
 	SendDoneToTracker(
 		tracker_url="http://%s/%s" % (TRACKER_HOST, TRACKER_ID),
