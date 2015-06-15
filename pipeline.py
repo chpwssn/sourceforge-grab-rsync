@@ -225,8 +225,7 @@ pipeline = Pipeline(
 				ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz")
 				#ItemInterpolation("foo.tar.gz")
 			],
-			#rsync_target_source_path=ItemInterpolation("%(data_dir)s/"),
-			rsync_target_source_path="./",
+			rsync_target_source_path=ItemInterpolation("%(data_dir)s/"),
 			rsync_extra_args=[
 				"--recursive",
 				"--partial",
