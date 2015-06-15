@@ -123,14 +123,14 @@ class getRsyncURL(object):
 		if item_type == "git":
 			self.target = "git.code.sf.net::p/%(project)s/%(mountpoint)s.git" % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "svn":
-			self.target = "svn.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "svn.code.sf.net::p/%(project)s/%(mountpoint)s" % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "hg":
-			self.target = "hg.code.sf.net::p/%(project)s/%(mountpoint)s " % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "hg.code.sf.net::p/%(project)s/%(mountpoint)s" % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "cvs":
-			self.target = "rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
+			self.target = "rsync://%(project)s.cvs.sourceforge.net/cvsroot/%(mountpoint)s/*" % {"project":item_project, "mountpoint":item_mountpoint}
 		elif item_type == "bzr":
-			self.target = "%(project)s.bzr.sourceforge.net::bzrroot/%(mountpoint)s/* " % {"project":item_project, "mountpoint":item_mountpoint}
-		#item.log_output(self.target)
+			self.target = "%(project)s.bzr.sourceforge.net::bzrroot/%(mountpoint)s/*" % {"project":item_project, "mountpoint":item_mountpoint}
+		item.log_output(self.target)
 		return self.target
 	
 		
@@ -233,8 +233,8 @@ pipeline = Pipeline(
 			]
 		),
 	),
-	#SendDoneToTracker(
-	#	tracker_url="http://%s/%s" % (TRACKER_HOST, TRACKER_ID),
-	#	stats=ItemValue("stats")
-	#)
+	SendDoneToTracker(
+		tracker_url="http://%s/%s" % (TRACKER_HOST, TRACKER_ID),
+		stats=ItemValue("stats")
+	)
 )
