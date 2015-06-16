@@ -1,4 +1,4 @@
-sourceforge-grab
+sourceforge-grab-rsync
 =============
 
 More information about the archiving project can be found on the ArchiveTeam wiki: [SourceForge](http://archiveteam.org/index.php?title=SourceForge)
@@ -15,7 +15,7 @@ In most of the below cases, there will be a web interface running at http://loca
 Running with a warrior
 -------------------------
 
-Follow the [instructions on the ArchiveTeam wiki](http://archiveteam.org/index.php?title=Warrior) for installing the Warrior, and select the "SourceForge" project in the Warrior interface.
+Follow the [instructions on the ArchiveTeam wiki](http://archiveteam.org/index.php?title=Warrior) for installing the Warrior, and select the "SourceForge Rsync" project in the Warrior interface.
 
 Running without a warrior
 -------------------------
@@ -26,7 +26,7 @@ To run this outside the warrior, clone this repository, cd into its directory an
 
 then start downloading with:
 
-    run-pipeline pipeline.py --concurrent 2 YOURNICKHERE
+    run-pipeline pipeline.py --concurrent 1 YOURNICKHERE
 
 For more options, run:
 
@@ -38,7 +38,7 @@ If you don't have root access and/or your version of pip is very old, you can re
 
 so that pip and seesaw are installed in your home, then run
 
-    ~/.local/bin/run-pipeline pipeline.py --concurrent 2 YOURNICKHERE
+    ~/.local/bin/run-pipeline pipeline.py --concurrent 1 YOURNICKHERE
 
 Running multiple instances on different IPs
 -------------------------------------------
@@ -47,19 +47,19 @@ This feature requires seesaw version 0.0.16 or greater. Use `pip install --upgra
 
 Use the `--context-value` argument to pass in `bind_address=123.4.5.6` (replace the IP address with your own).
 
-Example of running 2 threads, no web interface, and Wget binding of IP address:
+Example of running 1 thread, no web interface, and Wget binding of IP address:
 
-    run-pipeline pipeline.py --concurrent 2 YOURNICKHERE --disable-web-server --context-value bind_address=123.4.5.6
+    run-pipeline pipeline.py --concurrent 1 YOURNICKHERE --disable-web-server --context-value bind_address=123.4.5.6
 
 Distribution-specific setup
 -------------------------
 ### For Debian/Ubuntu:
 
     adduser --system --group --shell /bin/bash archiveteam
-    apt-get install -y git-core libgnutls-dev lua5.1 liblua5.1-0 liblua5.1-0-dev screen python-dev python-pip bzip2 zlib1g-dev
+    apt-get install -y git-core libgnutls-dev lua5.1 liblua5.1-0 liblua5.1-0-dev screen python-dev python-pip bzip2 zlib1g-dev 
     pip install seesaw
-    su -c "cd /home/archiveteam; git clone https://github.com/ArchiveTeam/sourceforge-grab.git; cd sourceforge-grab; ./get-wget-lua.sh" archiveteam
-    screen su -c "cd /home/archiveteam/sourceforge-grab/; run-pipeline pipeline.py --concurrent 2 --address '127.0.0.1' YOURNICKHERE" archiveteam
+    su -c "cd /home/archiveteam; git clone https://github.com/chpwssn/sourceforge-grab-rsync.git; cd sourceforge-grab-rsync;" archiveteam
+    screen su -c "cd /home/archiveteam/sourceforge-grab-rsync/; run-pipeline pipeline.py --concurrent 1 --address '127.0.0.1' YOURNICKHERE" archiveteam
     [... ctrl+A D to detach ...]
 
 Wget-lua is also available on [ArchiveTeam's PPA](https://launchpad.net/~archiveteam/+archive/wget-lua) for Ubuntu.
