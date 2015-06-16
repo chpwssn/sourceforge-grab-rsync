@@ -34,7 +34,7 @@ if StrictVersion(seesaw.__version__) < StrictVersion("0.1.5"):
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150614.07"
+VERSION = "20150616.03"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'sourceforge-rsync'
 TRACKER_HOST = 'tracker.nerds.io'
@@ -195,7 +195,7 @@ pipeline = Pipeline(
 	CheckIP(),
 	GetItemFromTracker("http://%s/%s" % (TRACKER_HOST, TRACKER_ID), downloader,
 		VERSION),
-    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), cleanItem("%(data_dir)s/%(item_name)s")]),
+	LimitConcurrent(1,ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), cleanItem("%(data_dir)s/%(item_name)s")])),
 	ExternalProcess("tar", ["tar", "-czf", cleanItem("%(data_dir)s/%(item_name)s.tar.gz"), "-C", ItemInterpolation("%(data_dir)s/"), "--owner=1999", "--group=2015", "--no-same-permissions", cleanItem("%(item_name)s")]),
 	LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
 		name="shared:rsync_threads", title="Rsync threads",
