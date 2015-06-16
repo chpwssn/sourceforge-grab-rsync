@@ -8,6 +8,7 @@ import socket
 import sys
 import time
 import random
+import string
 
 import seesaw
 from seesaw.config import NumberConfigValue
@@ -33,7 +34,7 @@ if StrictVersion(seesaw.__version__) < StrictVersion("0.1.5"):
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150614.04"
+VERSION = "20150614.05"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'sourceforge-rsync'
 TRACKER_HOST = 'tracker.nerds.io'
@@ -133,6 +134,17 @@ class outputName(object):
 		#item.log_output(item['item_name'])
 		item_type, item_project, item_mountpoint = item['item_name'].split(':')
 		return "%(project)s-%(SCM)s-%(mountpoint)s" % {"project":item_project, "SCM":item_type, "mountpoint":item_mountpoint}
+		
+class cleanItem(object):
+    '''Removes the : in an item while formatting based on ItemInterpolation'''
+    def __init__(self, s):
+        self.s = s
+
+    def realize(self, item):
+        return string.replace(self.s % item,":","-")
+
+    def __str__(self):
+        return "<'" + string.replace(self.s % item,":","-") + "'>"
 
 
 class MoveFiles(SimpleTask):
@@ -183,8 +195,8 @@ pipeline = Pipeline(
 	CheckIP(),
 	GetItemFromTracker("http://%s/%s" % (TRACKER_HOST, TRACKER_ID), downloader,
 		VERSION),
-	ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), ItemInterpolation("%(data_dir)s/%(item_name)s")]),
-	ExternalProcess("tar", ["tar", "-czf", ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz"), "-C", ItemInterpolation("%(data_dir)s/"), ItemInterpolation("%(item_name)s")]),
+    ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), cleanItem("%(data_dir)s/%(item_name)s")]),
+	ExternalProcess("tar", ["tar", "-czf", cleanItem("%(data_dir)s/%(item_name)s.tar.gz"), "-C", ItemInterpolation("%(data_dir)s/"), "--owner=1999", "--group=2015", cleanItem("%(item_name)s")]),
 	LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
 		name="shared:rsync_threads", title="Rsync threads",
 		description="The maximum number of concurrent uploads."),
@@ -193,7 +205,7 @@ pipeline = Pipeline(
 			downloader=downloader,
 			version=VERSION,
 			files=[
-				ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz")
+				cleanItem("%(data_dir)s/%(item_name)s.tar.gz")
 				#ItemInterpolation("foo.tar.gz")
 			],
 			rsync_target_source_path=ItemInterpolation("%(data_dir)s/"),
@@ -208,7 +220,7 @@ pipeline = Pipeline(
 		defaults={"downloader": downloader, "version": VERSION},
 		file_groups={
 			"data": [
-				ItemInterpolation("%(data_dir)s/%(item_name)s.tar.gz")
+				cleanItem("%(data_dir)s/%(item_name)s.tar.gz")
 			]
 		},
 		id_function=stats_id_function,
