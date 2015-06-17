@@ -58,10 +58,10 @@ else:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150617.05"
+VERSION = "20150617.06"
 USER_AGENT = 'ArchiveTeam'
-TRACKER_ID = 'sourceforge-rsync'
-TRACKER_HOST = 'tracker.nerds.io'
+TRACKER_ID = 'sourceforgersync'
+TRACKER_HOST = 'tracker.archiveteam.org'
 
 
 ###########################################################################
