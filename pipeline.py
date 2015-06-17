@@ -19,6 +19,7 @@ from seesaw.project import Project
 from seesaw.task import SimpleTask, LimitConcurrent
 from seesaw.tracker import GetItemFromTracker, PrepareStatsForTracker, \
 	UploadWithTracker, SendDoneToTracker
+from seesaw.util import find_executable
 
 
 
@@ -28,13 +29,30 @@ if StrictVersion(seesaw.__version__) < StrictVersion("0.1.5"):
 	raise Exception("This pipeline needs seesaw version 0.1.5 or higher.")
 
 
+###########################################################################
+# Find a useful Wget+Lua executable.
+#
+# WGET_LUA will be set to the first path that
+# 1. does not crash with --version, and
+# 2. prints the required version string
+RSYNC_TEST = find_executable(
+	"rsync_size_tester",
+	["1"],
+	[
+		"./rsync_size_tester.py",
+		"../rsync_size_tester.py",
+		"../../rsync_size_tester.py",
+		"/home/warrior/rsync_size_tester.py",
+		"/usr/bin/rsync_size_tester.py"
+	]
+)
 
 ###########################################################################
 # The version number of this pipeline definition.
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150616.05"
+VERSION = "20150617.02"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'sourceforge-rsync'
 TRACKER_HOST = 'tracker.nerds.io'
@@ -136,15 +154,15 @@ class outputName(object):
 		return "%(project)s-%(SCM)s-%(mountpoint)s" % {"project":item_project, "SCM":item_type, "mountpoint":item_mountpoint}
 		
 class cleanItem(object):
-    '''Removes the : in an item while formatting based on ItemInterpolation'''
-    def __init__(self, s):
-        self.s = s
+	'''Removes the : in an item while formatting based on ItemInterpolation'''
+	def __init__(self, s):
+		self.s = s
 
-    def realize(self, item):
-        return string.replace(self.s % item,":",".")
+	def realize(self, item):
+		return string.replace(self.s % item,":",".")
 
-    def __str__(self):
-        return "<'" + string.replace(self.s % item,":",".") + "'>"
+	def __str__(self):
+		return "<'" + string.replace(self.s % item,":",".") + "'>"
 
 
 class MoveFiles(SimpleTask):
@@ -194,6 +212,7 @@ project = Project(
 pipeline = Pipeline(
 	CheckIP(),
 	GetItemFromTracker("http://%s/%s" % (TRACKER_HOST, TRACKER_ID), downloader, VERSION),
+	ExternalProcess("Size Test",[RSYNC_TEST,"-t",getRsyncURL("foo"),"-m","10"]),
 	LimitConcurrent(1,ExternalProcess("rsync", ["rsync", "-av", getRsyncURL("foo"), cleanItem("%(data_dir)s/%(item_name)s")])),
 	ExternalProcess("tar", ["tar", "-czf", cleanItem("%(data_dir)s/%(item_name)s.tar.gz"), "-C", ItemInterpolation("%(data_dir)s/"), "--owner=1999", "--group=2015", "--no-same-permissions", cleanItem("%(item_name)s")]),
 	LimitConcurrent(NumberConfigValue(min=1, max=4, default="1",
