@@ -44,15 +44,21 @@ RSYNC_TEST = find_executable(
 	]
 )
 
+#Yes this is hackish but run-pipeline won't let you add more command line args
+#If the file "LARGE-RSYNC" is in the directory, allow larger rsync's
 #Using Gigabytes not Gibibytes to be safe
-MAX_RSYNC = "25000000000"
+if os.path.isfile("LARGE-RSYNC"):
+	MAX_RSYNC = "250000000000"
+else:
+	MAX_RSYNC = "25000000000"
+
 
 ###########################################################################
 # The version number of this pipeline definition.
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = "20150617.03"
+VERSION = "20150617.04"
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'sourceforge-rsync'
 TRACKER_HOST = 'tracker.nerds.io'
