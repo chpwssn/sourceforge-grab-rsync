@@ -6,6 +6,8 @@ More information about the archiving project can be found on the ArchiveTeam wik
 Setup instructions
 =========================
 
+**Warning Some Rsync Targets May Be 90GB Or Larger, Use Caution**
+
 Be sure to replace `YOURNICKHERE` with the nickname that you want to be shown as, on the tracker. You don't need to register it, just pick a nickname you like.
 
 In most of the below cases, there will be a web interface running at http://localhost:8001/. If you don't know or care what this is, you can just ignore it—otherwise, it gives you a fancy view of what's going on.
@@ -22,7 +24,6 @@ Running without a warrior
 To run this outside the warrior, clone this repository, cd into its directory and run:
 
     pip install seesaw
-    ./get-wget-lua.sh
 
 then start downloading with:
 
@@ -56,7 +57,7 @@ Distribution-specific setup
 ### For Debian/Ubuntu:
 
     adduser --system --group --shell /bin/bash archiveteam
-    apt-get install -y git-core libgnutls-dev lua5.1 liblua5.1-0 liblua5.1-0-dev screen python-dev python-pip bzip2 zlib1g-dev 
+    apt-get install -y git-core libgnutls-dev screen python-dev python-pip bzip2 zlib1g-dev rsync
     pip install seesaw
     su -c "cd /home/archiveteam; git clone https://github.com/chpwssn/sourceforge-grab-rsync.git; cd sourceforge-grab-rsync;" archiveteam
     screen su -c "cd /home/archiveteam/sourceforge-grab-rsync/; run-pipeline pipeline.py --concurrent 1 --address '127.0.0.1' YOURNICKHERE" archiveteam
@@ -68,13 +69,13 @@ Wget-lua is also available on [ArchiveTeam's PPA](https://launchpad.net/~archive
 
 Ensure that you have the CentOS equivalent of bzip2 installed as well. You might need the EPEL repository to be enabled.
 
-    yum -y install gnutls-devel lua-devel python-pip zlib-devel
+    yum -y install gnutls-devel python-pip zlib-devel rsync
     pip install seesaw
     [... pretty much the same as above ...]
 
 ### For openSUSE:
 
-    zypper install liblua5_1 lua51 lua51-devel screen python-pip libgnutls-devel bzip2 python-devel gcc make
+    zypper install screen python-pip libgnutls-devel bzip2 python-devel rsync
     pip install seesaw
     [... pretty much the same as above ...]
 
@@ -82,7 +83,7 @@ Ensure that you have the CentOS equivalent of bzip2 installed as well. You might
 
 You need Homebrew. Ensure that you have the OS X equivalent of bzip2 installed as well.
 
-    brew install python lua gnutls
+    brew install python gnutls
     pip install seesaw
     [... pretty much the same as above ...]
 
