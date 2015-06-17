@@ -1,4 +1,10 @@
 #!/usr/bin/python
+
+#This script is designed to take an rsync target and a maximum size in bytes as inputs
+#it will --dry-run the rsync and attempt to extract the total file size (size of all files
+#in the rsync target). If this is greater than the maximum size passed in as an argument, it
+#will return non zero.
+
 import os,re,string,sys, subprocess
 from optparse import OptionParser
 
